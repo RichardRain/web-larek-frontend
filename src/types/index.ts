@@ -43,6 +43,7 @@ export type TBasketItem = Pick<IItem, 'id' | 'title' | 'price'>;
 
 export interface ICatalogModel extends ICatalog {
   addItem(item: IItem): void;
+  setItems(items: IItem[]): void;
   getItem(id: string): IItem;
   deleteItem(id: string): void;
 }
@@ -56,9 +57,9 @@ export interface IOrderModel extends IOrder {
   getOrder(): IOrder;
 }
 
-export interface IView {
-  element: HTMLElement;
-  render(): void;
+export interface IView<T> {
+  setDisabled(element: HTMLElement, state: boolean): void;
+  render(data?: Partial<T>): HTMLElement;
 }
 
 export interface IPage {
@@ -67,8 +68,13 @@ export interface IPage {
   locked: boolean;
 }
 
-export interface IItemView {
-  
+export interface ICard<T> {
+  id: string;
+  title: string;
+  image?: string;
+  description?: string;
+  category?: string;
+  price?: number | null;
 }
 
 export interface ICatalogView {
