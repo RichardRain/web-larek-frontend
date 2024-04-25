@@ -1,4 +1,4 @@
-import { View } from './View'
+import { View } from './common/View'
 import { IEvents } from "./base/events";
 import { ensureElement } from "../utils/utils";
 import { IPage } from '../types/index'

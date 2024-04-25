@@ -1,4 +1,4 @@
-import { IView } from '../types/index'
+import { IView } from '../../types/index'
 
 export abstract class View<T> implements IView<T> {
   protected constructor(protected readonly container: HTMLElement) {

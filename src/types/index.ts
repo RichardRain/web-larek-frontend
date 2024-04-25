@@ -90,11 +90,10 @@ export interface IBasketView {
 }
 
 export interface IModal {
-  modal: HTMLElement;
-  button?: HTMLButtonElement;
+  content: HTMLElement | null;
+  _button?: HTMLButtonElement;
   open(): void;
   close(): void;
-  onClick(fn: Function): void;
 }
 
 export interface IItemModal {

@@ -1,35 +1,25 @@
-import { View } from './common/View';
-import { ICard } from '../types/index';
+import { Modal, IModalAction } from './Modal';
 import { ensureElement } from "../utils/utils";
+import { IItemModal } from '../types/index';
+import { IEvents } from './base/events';
 
-interface ICardActions {
-  onClick: (event: MouseEvent) => void;
-}
+export class ItemModal extends Modal implements IItemModal {
+  _title: HTMLElement;
+  _description: HTMLElement;
+  _image: HTMLImageElement;
+  _category: HTMLElement;
+  _price: HTMLElement;
+  _button: HTMLButtonElement;
 
-export class Card<T> extends View<ICard<T>> {
-  protected _title: HTMLElement;
-  protected _image?: HTMLImageElement;
-  protected _description?: HTMLElement;
-  protected _category?: HTMLElement;
-  protected _price?: HTMLElement;
-  protected _button?: HTMLButtonElement;
-
-  constructor(protected blockName: string, container: HTMLElement, actions?: ICardActions) {
-    super(container);
-
-    this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);
-    this._image = ensureElement<HTMLImageElement>(`.${blockName}__image`, container);
-    // this._description = ensureElement<HTMLElement>(`.${blockName}__description`, container);
-    this._category = ensureElement<HTMLElement>(`.${blockName}__category`, container);
-    this._price = ensureElement<HTMLElement>(`.${blockName}__price`, container);
-    // this._button = ensureElement<HTMLButtonElement>(`.${blockName}__button`, container);
-
-    if (actions?.onClick) {
-      if (this._button) {
-        this._button.addEventListener('click', actions.onClick);
-      } else {
-        container.addEventListener('click', actions.onClick);
-      }
+  set content(value: HTMLElement | null) {
+    if (value) {
+      this._content.replaceChildren(value);
+      this._button = ensureElement<HTMLButtonElement>(`.${this.blockName}__button`, this._content);
+      this._title = ensureElement<HTMLElement>(`.${this.blockName}__title`, this._content);
+      this._description = ensureElement<HTMLElement>(`.${this.blockName}__text`, this._content);
+      this._image = ensureElement<HTMLImageElement>(`.${this.blockName}__image`, this._content);
+      this._category = ensureElement<HTMLElement>(`.${this.blockName}__category`, this._content);
+      this._price = ensureElement<HTMLElement>(`.${this.blockName}__price`, this._content);
     }
   }
 
@@ -103,5 +93,9 @@ export class Card<T> extends View<ICard<T>> {
         this.setText(this._description, value);
       }
     }
+  }
+
+  setButtonAction(actions: IModalAction) {
+    this._button.addEventListener('click', actions.onClick);
   }
 }
