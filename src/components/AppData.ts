@@ -1,5 +1,5 @@
 import { Model } from './common/Model'
-import { ICatalogModel, IItem } from '../types/index';
+import { ICatalogModel, IItem, IBasketModel, IOrder, TPayment, TOrderedItems } from '../types/index';
 
 export type CatalogChangeEvent = {
   catalog: CatalogModel;
@@ -26,5 +26,64 @@ export class CatalogModel extends Model<IItem[]> implements ICatalogModel {
   deleteItem(id: string): void {
     this.items = this.items.filter(item => item.id !== id);
     this.emitChanges('catalog:changed', { items: this.items });
+  }
+}
+
+export type BasketChangeEvent = {
+  basket: BasketModel;
+}
+
+export class BasketModel extends Model<IItem[]> implements IBasketModel {
+  payment: TPayment | undefined;
+  email: string;
+  phone: string;
+  address: string;
+  total: number | null;
+  items: IItem[] = [];
+  ordered: TOrderedItems;
+
+  addItem(item: IItem): void {
+    this.items.push(item);
+    this.emitChanges('basket:changed', { items: this.items });
+  }
+
+  getItem(id: string): IItem {
+    return this.items.find(item => item.id === id) as IItem;
+  }
+
+  removeItem(id: string): void {
+    this.items = this.items.filter(item => item.id !== id);
+    this.emitChanges('basket:changed', { items: this.items });
+  }
+
+  validate(data: Record<'payment' | 'address', string> | Record<'email' | 'phone', string>): boolean {
+    return true; // 
+  }
+
+  getTotal():number {
+    this.total = 0;
+    this.items.forEach((item) => {
+      if (item.price) {
+        this.total += item.price;
+      }
+    })
+    return this.total;
+  }
+
+  clearOrder(): void {
+    this.items = [];
+    this.emitChanges('basket:changed', { items: this.items });
+  }
+
+  getOrder(): IOrder {
+    return {
+      payment: this.payment,
+      email: this.email,
+      phone: this.phone,
+      address: this.address,
+      total: this.total,
+      items: this.items,
+      ordered: this.ordered,
+    };
   }
 }

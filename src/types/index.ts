@@ -48,7 +48,7 @@ export interface ICatalogModel extends ICatalog {
   deleteItem(id: string): void;
 }
 
-export interface IOrderModel extends IOrder {
+export interface IBasketModel extends IOrder {
   validate(data: Record<keyof TOrderInfo, string>|Record<keyof TContactInfo, string>): boolean;
   addItem(item: IItem): void;
   getItem(id: string): IItem;
@@ -82,11 +82,11 @@ export interface ICatalogView {
 }
 
 export interface IBasketItemView {
-  counter?: number;
+
 }
 
 export interface IBasketView {
-  content: HTMLElement[];
+
 }
 
 export interface IModal {

@@ -1,7 +1,6 @@
 import { Modal, IModalAction } from './Modal';
 import { ensureElement } from "../utils/utils";
 import { IItemModal } from '../types/index';
-import { IEvents } from './base/events';
 
 export class ItemModal extends Modal implements IItemModal {
   _title: HTMLElement;
@@ -10,6 +9,7 @@ export class ItemModal extends Modal implements IItemModal {
   _category: HTMLElement;
   _price: HTMLElement;
   _button: HTMLButtonElement;
+  _content: HTMLElement;
 
   set content(value: HTMLElement | null) {
     if (value) {
@@ -74,6 +74,7 @@ export class ItemModal extends Modal implements IItemModal {
     if (this._price) {
       if (value === null) {
         this.setText(this._price, 'Бесценно');
+        this._button.setAttribute('Disabled', 'true');
       } else {
         const itemPrice: string = `${value} синапсов`;
         this.setText(this._price, itemPrice);
