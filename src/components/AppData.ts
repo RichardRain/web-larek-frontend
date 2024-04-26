@@ -51,8 +51,13 @@ export class BasketModel extends Model<IItem[]> implements IBasketModel {
     return this.items.find(item => item.id === id) as IItem;
   }
 
-  removeItem(id: string): void {
-    this.items = this.items.filter(item => item.id !== id);
+  removeItem(index: number): void {
+    this.items = this.items.filter((item, itemIndex) => {
+      if (itemIndex !== index) {
+        return item;
+      }
+    });
+    console.log(this.items);
     this.emitChanges('basket:changed', { items: this.items });
   }
 

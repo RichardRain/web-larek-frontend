@@ -54,7 +54,7 @@ events.on<BasketChangeEvent>('basket:changed', () => {
     const basketItem = new BasketItem(cloneTemplate(basketItemTemplate));
     // basketItem.content = cloneTemplate(basketItemTemplate);
     basketItem.setButtonAction({
-      onClick: () => events.emit('basket:remove', item)
+      onClick: () => events.emit('basket:remove', {item: item, index: index})
     });
     return basketItem.render({
       title: item.title,
@@ -90,8 +90,8 @@ events.on('basket:add', (item: IItem) => {
   page.counter = basketModel.items.length;
 })
 
-events.on('basket:remove', (item: IItem) => {
-  basketModel.removeItem(item.id);
+events.on('basket:remove', (data: {item: IItem, index: number}) => {
+  basketModel.removeItem(data.index);
   page.counter = basketModel.items.length;
 })
 

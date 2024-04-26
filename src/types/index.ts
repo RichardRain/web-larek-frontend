@@ -52,7 +52,7 @@ export interface IBasketModel extends IOrder {
   validate(data: Record<keyof TOrderInfo, string>|Record<keyof TContactInfo, string>): boolean;
   addItem(item: IItem): void;
   getItem(id: string): IItem;
-  removeItem(id: string): void;
+  removeItem(index: number): void;
   clearOrder(): void;
   getOrder(): IOrder;
 }
