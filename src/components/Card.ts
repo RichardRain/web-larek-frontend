@@ -1,9 +1,13 @@
-import { View } from './common/View';
-import { ICard } from '../types/index';
+import { IViewActions, View } from './common/View';
 import { ensureElement } from "../utils/utils";
 
-interface ICardActions {
-  onClick: (event: MouseEvent) => void;
+interface ICard<T> {
+  id: string;
+  title: string;
+  image?: string;
+  description?: string;
+  category?: string;
+  price?: number | null;
 }
 
 export class Card<T> extends View<ICard<T>> {
@@ -14,15 +18,13 @@ export class Card<T> extends View<ICard<T>> {
   protected _price?: HTMLElement;
   protected _button?: HTMLButtonElement;
 
-  constructor(protected blockName: string, container: HTMLElement, actions?: ICardActions) {
+  constructor(protected blockName: string, container: HTMLElement, actions?: IViewActions) {
     super(container);
 
     this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);
     this._image = ensureElement<HTMLImageElement>(`.${blockName}__image`, container);
-    // this._description = ensureElement<HTMLElement>(`.${blockName}__description`, container);
     this._category = ensureElement<HTMLElement>(`.${blockName}__category`, container);
     this._price = ensureElement<HTMLElement>(`.${blockName}__price`, container);
-    // this._button = ensureElement<HTMLButtonElement>(`.${blockName}__button`, container);
 
     if (actions?.onClick) {
       if (this._button) {

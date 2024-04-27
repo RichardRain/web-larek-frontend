@@ -1,7 +1,12 @@
 import { View } from './common/View'
 import { IEvents } from "./base/events";
 import { ensureElement } from "../utils/utils";
-import { IPage } from '../types/index'
+
+export interface IPage {
+  counter: number;
+  catalog: HTMLElement[];
+  locked: boolean;
+}
 
 export class Page extends View<IPage> {
   protected _counter: HTMLElement;

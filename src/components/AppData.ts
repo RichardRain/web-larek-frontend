@@ -1,8 +1,26 @@
 import { Model } from './common/Model'
-import { ICatalogModel, IItem, IBasketModel, IOrder, TPayment, TOrderedItems } from '../types/index';
+import { IItem, IOrder, TPayment, ICatalog, IOrderFinished, TOptions } from '../types/index';
+import { IEvents } from './base/events';
 
 export type CatalogChangeEvent = {
   catalog: CatalogModel;
+}
+
+export interface ICatalogModel extends ICatalog {
+  addItem(item: IItem): void;
+  setItems(items: IItem[]): void;
+  getItem(id: string): IItem;
+  deleteItem(id: string): void;
+}
+
+export interface IBasketModel extends IOrder {
+  validate(data: Partial<IOrder>): boolean;
+  addItem(item: IItem): void;
+  getItem(id: string): IItem;
+  removeItem(index: number): void;
+  getTotal(): number;
+  clearOrder(): void;
+  getOrder(): IOrderFinished;
 }
 
 export class CatalogModel extends Model<IItem[]> implements ICatalogModel {
@@ -40,7 +58,14 @@ export class BasketModel extends Model<IItem[]> implements IBasketModel {
   address: string;
   total: number | null;
   items: IItem[] = [];
-  ordered: TOrderedItems;
+  emailRe: RegExp;
+  phoneRe: RegExp;
+
+  constructor(data: IItem[], events: IEvents, options: TOptions) {
+    super(data, events);
+    this.emailRe = options.regex.email as RegExp;
+    this.phoneRe = options.regex.phone as RegExp;
+  }
 
   addItem(item: IItem): void {
     this.items.push(item);
@@ -57,12 +82,21 @@ export class BasketModel extends Model<IItem[]> implements IBasketModel {
         return item;
       }
     });
-    console.log(this.items);
     this.emitChanges('basket:changed', { items: this.items });
   }
 
-  validate(data: Record<'payment' | 'address', string> | Record<'email' | 'phone', string>): boolean {
-    return true; // 
+  validate(data: Partial<IOrder>): boolean {
+    if (data.email) {
+      return this.emailRe.test(data.email);
+    }
+    if (data.phone) {
+      if (data.phone.length > 16) {
+        return false;
+      } else {
+        return this.phoneRe.test(data.phone);
+      }
+      
+    }
   }
 
   getTotal():number {
@@ -80,15 +114,16 @@ export class BasketModel extends Model<IItem[]> implements IBasketModel {
     this.emitChanges('basket:changed', { items: this.items });
   }
 
-  getOrder(): IOrder {
+  getOrder(): IOrderFinished {
     return {
       payment: this.payment,
       email: this.email,
       phone: this.phone,
       address: this.address,
       total: this.total,
-      items: this.items,
-      ordered: this.ordered,
+      items: this.items.map((item) => {
+        return item.id;
+      }),
     };
   }
 }

@@ -1,26 +1,40 @@
-import { Modal, IModalAction } from './Modal';
+import { IViewActions, View, IView } from './common/View';
 import { ensureElement } from "../utils/utils";
-import { IItemModal } from '../types/index';
+import { IEvents } from './base/events';
 
-export class ItemModal extends Modal implements IItemModal {
-  _title: HTMLElement;
-  _description: HTMLElement;
-  _image: HTMLImageElement;
-  _category: HTMLElement;
-  _price: HTMLElement;
-  _button: HTMLButtonElement;
-  _content: HTMLElement;
+export interface IItemPreview extends IView<IItemPreview> {
+  id: string;
+  title: string;
+  image: string;
+  category: string;
+  price: number|null;
+  description: string|string[];
+}
 
-  set content(value: HTMLElement | null) {
-    if (value) {
-      this._content.replaceChildren(value);
-      this._button = ensureElement<HTMLButtonElement>(`.${this.blockName}__button`, this._content);
-      this._title = ensureElement<HTMLElement>(`.${this.blockName}__title`, this._content);
-      this._description = ensureElement<HTMLElement>(`.${this.blockName}__text`, this._content);
-      this._image = ensureElement<HTMLImageElement>(`.${this.blockName}__image`, this._content);
-      this._category = ensureElement<HTMLElement>(`.${this.blockName}__category`, this._content);
-      this._price = ensureElement<HTMLElement>(`.${this.blockName}__price`, this._content);
-    }
+export class ItemPreview extends View<IItemPreview> {
+  private _title: HTMLElement;
+  private _description: HTMLElement;
+  private _image: HTMLImageElement;
+  private _category: HTMLElement;
+  private _price: HTMLElement;
+  private _button: HTMLButtonElement;
+
+  constructor(protected blockName: string, container: HTMLElement, protected events: IEvents, actions?: IViewActions) {
+    super(container);
+    this._button = ensureElement<HTMLButtonElement>(`.${this.blockName}__button`, container);
+      this._title = ensureElement<HTMLElement>(`.${this.blockName}__title`, container);
+      this._description = ensureElement<HTMLElement>(`.${this.blockName}__text`, container);
+      this._image = ensureElement<HTMLImageElement>(`.${this.blockName}__image`, container);
+      this._category = ensureElement<HTMLElement>(`.${this.blockName}__category`, container);
+      this._price = ensureElement<HTMLElement>(`.${this.blockName}__price`, container);
+
+      if (actions?.onClick) {
+        if (this._button) {
+          this._button.addEventListener('click', actions.onClick);
+        } else {
+          container.addEventListener('click', actions.onClick);
+        }
+      }
   }
 
   set id(value: string) {
@@ -94,9 +108,5 @@ export class ItemModal extends Modal implements IItemModal {
         this.setText(this._description, value);
       }
     }
-  }
-
-  setButtonAction(actions: IModalAction) {
-    this._button.addEventListener('click', actions.onClick);
   }
 }
