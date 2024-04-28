@@ -109,12 +109,14 @@ export type TSuccessDescription = {payment: TPayment, total: number};
 ```
 Объект настроек
 ```typescript
-export type TOptions = Record<string, TOption>;
+export interface IOptions {
+  events: Record<string, string>,
+  screens: Record<string, string>,
+  blocks: Record<string, string>,
+  regex: Record<string, RegExp>,
+}
 ```
-Элемент объекта настроек
-```typescript
-type TOption = Record<string,  string|RegExp>;
-```
+
 ## Архитектура
 Код разделен на слои согласно парадигме MVP:
 - Model - слой данных, отвечает за хранение и изменение данных

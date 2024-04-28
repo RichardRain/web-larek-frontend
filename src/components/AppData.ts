@@ -1,5 +1,5 @@
 import { Model } from './common/Model'
-import { IItem, IOrder, TPayment, ICatalog, IOrderFinished, TOptions } from '../types/index';
+import { IItem, IOrder, TPayment, ICatalog, IOrderFinished, IOptions } from '../types/index';
 import { IEvents } from './base/events';
 
 export type CatalogChangeEvent = {
@@ -61,10 +61,10 @@ export class BasketModel extends Model<IItem[]> implements IBasketModel {
   emailRe: RegExp;
   phoneRe: RegExp;
 
-  constructor(data: IItem[], events: IEvents, options: TOptions) {
+  constructor(data: IItem[], events: IEvents, options: IOptions) {
     super(data, events);
-    this.emailRe = options.regex.email as RegExp;
-    this.phoneRe = options.regex.phone as RegExp;
+    this.emailRe = options.regex.email;
+    this.phoneRe = options.regex.phone;
   }
 
   addItem(item: IItem): void {

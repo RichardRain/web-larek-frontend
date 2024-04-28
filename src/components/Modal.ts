@@ -1,7 +1,7 @@
 import { IView, View } from './common/View';
 import { ensureElement } from "../utils/utils";
 import { IEvents } from './base/events';
-import { TOptions } from '../types';
+import { IOptions } from '../types';
 
 export interface IModal extends IView<IModal> {
   content: HTMLElement | null;
@@ -21,9 +21,9 @@ export interface IModalAction {
 export class Modal extends View<IModal> implements IModal {
   protected _closeButton: HTMLButtonElement;
   protected _content: HTMLElement;
-  protected options: TOptions;
+  protected options: IOptions;
 
-  constructor(protected blockName: string, container: HTMLElement, protected events: IEvents, options: TOptions) {
+  constructor(protected blockName: string, container: HTMLElement, protected events: IEvents, options: IOptions) {
     super(container);
     this._closeButton = ensureElement<HTMLButtonElement>('.modal__close', container);
     this._content = ensureElement<HTMLElement>('.modal__content', container);
@@ -42,13 +42,13 @@ export class Modal extends View<IModal> implements IModal {
 
   open(): void {
     this.toggleClass(this.container, 'modal_active', true);
-    this.events.emit(this.options.events['MODAL_OPEN'] as string);
+    this.events.emit(this.options.events['MODAL_OPEN']);
   }
 
   close(): void {
     this.toggleClass(this.container, 'modal_active', false);
     this.content = null;
-    this.events.emit(this.options.events['MODAL_CLOSE'] as string);
+    this.events.emit(this.options.events['MODAL_CLOSE']);
   }
 
   render(data: IModalData): HTMLElement {

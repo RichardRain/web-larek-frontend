@@ -1,12 +1,13 @@
 import { ILarekApi } from './LarekApi';
 import { IEvents } from './base/events';
-import { IErrorResponse, IItem, IOrder, IOrderResult, TOptions } from '../types/index';
+import { IErrorResponse, IItem, IOrder, IOrderResult, IOptions } from '../types/index';
 import { cloneTemplate, ensureElement } from '../utils/utils';
 import { IBasketModel, BasketModel, ICatalogModel, CatalogModel, CatalogChangeEvent, BasketChangeEvent } from './AppData';
 import { IPage, Page } from './Page';
 import { IModal, Modal } from './Modal';
 import { IItemPreview, ItemPreview } from './ItemPreview';
-import { BasketItemView, BasketView, IBasketView } from './Basket';
+import { BasketView, IBasketView } from './Basket';
+import {BasketItemView} from './BasketItem';
 import { Form, IForm } from './Form';
 import { ISuccessView, SuccessView } from './Success';
 import { Card } from './Card';
@@ -14,7 +15,7 @@ import { Card } from './Card';
 interface IPresenter {
   api: ILarekApi;
   events: IEvents;
-  options: TOptions;
+  options: IOptions;
   currentScreen: string;
   pageElement: HTMLElement;
   modalElement: HTMLDivElement;
@@ -40,7 +41,7 @@ interface IPresenter {
 export class Presenter implements IPresenter {
   api: ILarekApi;
   events: IEvents;
-  options: TOptions;
+  options: IOptions;
   currentScreen: string;
   pageElement: HTMLElement;
   modalElement: HTMLDivElement;
@@ -61,7 +62,7 @@ export class Presenter implements IPresenter {
   formContacts: IForm;
   successView: ISuccessView;
 
-  constructor(api: ILarekApi, events: IEvents, options: TOptions) {
+  constructor(api: ILarekApi, events: IEvents, options: IOptions) {
     // Элементы страницы:
     this.pageElement = document.querySelector('.page');
     this.modalElement = ensureElement<HTMLDivElement>('#modal-container');
@@ -89,37 +90,37 @@ export class Presenter implements IPresenter {
     // Главная страница
     this.page = new Page(this.pageElement, events);
     // Модальное окно
-    this.modal = new Modal(this.options.blocks.modal as string, this.modalElement, events, options);
+    this.modal = new Modal(this.options.blocks.modal, this.modalElement, events, options);
 
     // Части интерфейса, которые подставляются в модальное окно:
     // Карточка товара
-    this.itemPreview = new ItemPreview(this.options.blocks.card as string, cloneTemplate(this.cardPreviewTemplate), events, {
-      onClick: () => events.emit(this.options.events['BASKET_ADD'] as string, this.catalogModel.getItem(this.itemPreview.id))
+    this.itemPreview = new ItemPreview(this.options.blocks.card, cloneTemplate(this.cardPreviewTemplate), events, {
+      onClick: () => events.emit(this.options.events['BASKET_ADD'], this.catalogModel.getItem(this.itemPreview.id))
     });
     // Корзина
-    this.basket = new BasketView(this.options.blocks.basket as string, cloneTemplate(this.basketTemplate), events, {
-      onClick: () => events.emit(this.options.events['FORM_ORDER'] as string)
+    this.basket = new BasketView(this.options.blocks.basket, cloneTemplate(this.basketTemplate), events, {
+      onClick: () => events.emit(this.options.events['FORM_ORDER'])
     });
     // Форма о способе оплаты
-    this.formOrder = new Form(this.options.blocks.form as string, cloneTemplate(this.formOrderTemplate), events, {
+    this.formOrder = new Form(this.options.blocks.form, cloneTemplate(this.formOrderTemplate), events, {
       onClick: (evt) => {
         evt.preventDefault();
-        events.emit(this.options.events['FORM_CONTACTS'] as string);
+        events.emit(this.options.events['FORM_CONTACTS']);
       }
     });
     // Форма контактных данных
-    this.formContacts = new Form(this.options.blocks.form as string, cloneTemplate(this.formContactsTemplate), events, {
+    this.formContacts = new Form(this.options.blocks.form, cloneTemplate(this.formContactsTemplate), events, {
       onClick: (evt) => {
         evt.preventDefault();
-        events.emit(this.options.events['FORM_SUBMIT'] as string);
+        events.emit(this.options.events['FORM_SUBMIT']);
       }
     });
     // Сообщение об успешном заказе
-    this.successView = new SuccessView(this.options.screens['ORDER_SUCCESS'] as string, cloneTemplate(this.successTemplate), {
+    this.successView = new SuccessView(this.options.screens['ORDER_SUCCESS'], cloneTemplate(this.successTemplate), {
       onClick: () => this.modal.close()
     });
     // Текущее состояние экрана
-    this.currentScreen = this.options.screens['MAIN_SCREEN'] as string;
+    this.currentScreen = this.options.screens['MAIN_SCREEN'];
   }
 
   // Бизнес-логика
@@ -132,10 +133,10 @@ export class Presenter implements IPresenter {
     });
 
     // Рендер товаров на главном экране при изменении списка товаров
-    this.events.on<CatalogChangeEvent>(this.options.events['CATALOG_CHANGED'] as string, () => {
+    this.events.on<CatalogChangeEvent>(this.options.events['CATALOG_CHANGED'], () => {
       this.page.catalog = this.catalogModel.items.map((item) => {
-        const card = new Card(this.options.blocks.card as string, cloneTemplate(this.cardCatalogTemplate), {
-          onClick: () => this.events.emit(this.options.events['CARD_SELECT'] as string, item)
+        const card = new Card(this.options.blocks.card, cloneTemplate(this.cardCatalogTemplate), {
+          onClick: () => this.events.emit(this.options.events['CARD_SELECT'], item)
         });
         return card.render({
           title: item.title,
@@ -149,11 +150,11 @@ export class Presenter implements IPresenter {
     });
 
     // Рендер списка товаров в корзине при изменении корзины
-    this.events.on<BasketChangeEvent>(this.options.events['BASKET_CHANGED'] as string, () => {
+    this.events.on<BasketChangeEvent>(this.options.events['BASKET_CHANGED'], () => {
       this.basket.list = this.basketModel.items.map((item, index) => {
         const basketItem = new BasketItemView(cloneTemplate(this.basketItemTemplate));
         basketItem.setButtonAction({
-          onClick: () => this.events.emit(this.options.events['BASKET_REMOVE'] as string, { item: item, index: index })
+          onClick: () => this.events.emit(this.options.events['BASKET_REMOVE'], { item: item, index: index })
         });
         return basketItem.render({
           title: item.title,
@@ -163,7 +164,7 @@ export class Presenter implements IPresenter {
         });
       });
       // Пересчет суммы товаров при открытой корзине
-      if (this.currentScreen === this.options.screens['BASKET_MODAL'] as string) {
+      if (this.currentScreen === this.options.screens['BASKET_MODAL']) {
         this.basket.total = this.basketModel.getTotal();
       }
       // Отключение кнопки при пустой корзине
@@ -175,7 +176,7 @@ export class Presenter implements IPresenter {
     })
 
     // Рендер модального окна с карточкой товара при выборе карточки на главном экране
-    this.events.on(this.options.events['CARD_SELECT'] as string, (item: IItem) => {
+    this.events.on(this.options.events['CARD_SELECT'], (item: IItem) => {
       this.modal.render({
         content: this.itemPreview.render({
           id: item.id,
@@ -186,35 +187,36 @@ export class Presenter implements IPresenter {
           image: item.image,
         })
       });
-      this.events.emit(this.options.events['SCREEN_CHANGED'] as string, { current: this.options.screens['ITEM_MODAL'] as string });
+      this.events.emit(this.options.events['SCREEN_CHANGED'], { current: this.options.screens['ITEM_MODAL'] });
       this.modal.open();
     });
 
-    // Добавление товара в корзину и обновление счетчика товаров в корзине на главной странице
-    this.events.on(this.options.events['BASKET_ADD'] as string, (item: IItem) => {
+    // Добавление товара в корзину и обновление счетчика товаров в корзине на главной странице, закрытие модального окна при добавлении товара в корзину
+    this.events.on(this.options.events['BASKET_ADD'], (item: IItem) => {
       this.basketModel.addItem(item);
       this.page.counter = this.basketModel.items.length;
+      this.modal.close();
     })
 
     // Удаление товара из корзины и обновление счетчика товаров в корзине на главной странице
-    this.events.on(this.options.events['BASKET_REMOVE'] as string, (data: { item: IItem, index: number }) => {
+    this.events.on(this.options.events['BASKET_REMOVE'], (data: { item: IItem, index: number }) => {
       this.basketModel.removeItem(data.index);
       this.page.counter = this.basketModel.items.length;
     })
 
     // Блокирует прокрутку главной страницы при открытии модального окна
-    this.events.on(this.options.events['MODAL_OPEN'] as string, () => {
+    this.events.on(this.options.events['MODAL_OPEN'], () => {
       this.page.locked = true;
     });
 
     // Разрешает прокрутку главной страницы при закрытии модального окна
-    this.events.on(this.options.events['MODAL_CLOSE'] as string, () => {
+    this.events.on(this.options.events['MODAL_CLOSE'], () => {
       this.page.locked = false;
-      this.events.emit(this.options.events['SCREEN_CHANGED'] as string, { current: this.options.screens['MAIN_SCREEN'] as string });
+      this.events.emit(this.options.events['SCREEN_CHANGED'], { current: this.options.screens['MAIN_SCREEN'] });
     });
 
     // Рендер корзины при ее открытии
-    this.events.on(this.options.events['BASKET_OPEN'] as string, () => {
+    this.events.on(this.options.events['BASKET_OPEN'], () => {
       this.modal.render({ content: this.basket.render() });
       if (this.basketModel.items.length === 0) {
         this.basket.toggleButton(true);
@@ -222,12 +224,12 @@ export class Presenter implements IPresenter {
         this.basket.toggleButton(false);
       }
       this.basket.total = this.basketModel.getTotal();
-      this.events.emit(this.options.events['SCREEN_CHANGED'] as string, { current: this.options.screens['BASKET_MODAL'] as string});
+      this.events.emit(this.options.events['SCREEN_CHANGED'], { current: this.options.screens['BASKET_MODAL']});
       this.modal.open();
     });
 
     // Рендер формы заказа
-    this.events.on(this.options.events['FORM_ORDER'] as string, () => {
+    this.events.on(this.options.events['FORM_ORDER'], () => {
       this.modal.render({ content: this.formOrder.render() });
       if (this.basketModel.payment && this.basketModel.address) {
         this.formOrder.toggleButton(false);
@@ -236,12 +238,12 @@ export class Presenter implements IPresenter {
         this.formOrder.error = 'Выберите способ оплаты и введите адрес доставки.';
         this.formOrder.toggleButton(true);
       }
-      this.events.emit(this.options.events['SCREEN_CHANGED'] as string, { current: this.options.screens['ORDER_MODAL'] as string});
+      this.events.emit(this.options.events['SCREEN_CHANGED'], { current: this.options.screens['ORDER_MODAL']});
       this.modal.open();
     });
 
     // Рендер формы контактов
-    this.events.on(this.options.events['FORM_CONTACTS'] as string, () => {
+    this.events.on(this.options.events['FORM_CONTACTS'], () => {
       this.modal.render({ content: this.formContacts.render() });
       if (this.basketModel.email && this.basketModel.phone) {
         this.formContacts.toggleButton(false);
@@ -250,11 +252,11 @@ export class Presenter implements IPresenter {
         this.formContacts.error = 'Введите email и телефон.';
         this.formContacts.toggleButton(true);
       }
-      this.events.emit(this.options.events['SCREEN_CHANGED'] as string, { current: this.options.screens['CONTACTS_MODAL'] as string});
+      this.events.emit(this.options.events['SCREEN_CHANGED'], { current: this.options.screens['CONTACTS_MODAL']});
       this.modal.open();
     });
 
-    this.events.on(this.options.events['FORM_CHANGED'] as string, (data: Partial<IOrder>) => {
+    this.events.on(this.options.events['FORM_CHANGED'], (data: Partial<IOrder>) => {
       // Проверка на валидность форм
       if (this.basketModel.payment && this.basketModel.address) {
         this.formOrder.toggleButton(false);
@@ -297,10 +299,10 @@ export class Presenter implements IPresenter {
     });
 
     // Отправка заказа на сервер, обработка ответа сервера
-    this.events.on(this.options.events['FORM_SUBMIT'] as string, () => {
+    this.events.on(this.options.events['FORM_SUBMIT'], () => {
       this.api.makeOrder(this.basketModel.getOrder())
         .then((data: IOrderResult) => {
-          this.events.emit(this.options.events['FORM_SUCCESS'] as string, data);
+          this.events.emit(this.options.events['FORM_SUCCESS'], data);
         })
         .catch((error: IErrorResponse) => {
           alert(error.error);
@@ -308,7 +310,7 @@ export class Presenter implements IPresenter {
     });
 
     // Рендер модального окна об успешном заказе, очистка корзины и сброс счетчика корзины
-    this.events.on(this.options.events['FORM_SUCCESS'] as string, (data: IOrderResult) => {
+    this.events.on(this.options.events['FORM_SUCCESS'], (data: IOrderResult) => {
       this.modal.render({ content: this.successView.render() });
       this.successView.description = { payment: this.basketModel.payment, total: data.total };
       this.basketModel.clearOrder();
@@ -317,7 +319,7 @@ export class Presenter implements IPresenter {
     })
 
     // Обновляет статус текущего экрана
-    this.events.on(this.options.events['SCREEN_CHANGED'] as string, (screen: { current: string }) => {
+    this.events.on(this.options.events['SCREEN_CHANGED'], (screen: { current: string }) => {
       this.currentScreen = screen.current;
     });
   }

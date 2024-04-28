@@ -45,6 +45,9 @@ export type TPayment = 'card' | 'cash';
 
 export type TSuccessDescription = {payment: TPayment, total: number};
 
-export type TOptions = Record<string, TOption>;
-
-type TOption = Record<string,  string|RegExp>;
+export interface IOptions {
+  events: Record<string, string>,
+  screens: Record<string, string>,
+  blocks: Record<string, string>,
+  regex: Record<string, RegExp>,
+}
